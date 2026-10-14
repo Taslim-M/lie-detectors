@@ -1,0 +1,404 @@
+{
+  "sources": {
+    "cities.csv": {
+      "rows": 1496,
+      "true": 748,
+      "false": 748,
+      "duplicate_statements": 0,
+      "conflicting_labels": 0,
+      "unparsed": 0,
+      "unparsed_examples": []
+    },
+    "neg_cities.csv": {
+      "rows": 1496,
+      "true": 748,
+      "false": 748,
+      "duplicate_statements": 0,
+      "conflicting_labels": 0,
+      "unparsed": 0,
+      "unparsed_examples": []
+    },
+    "sp_en_trans.csv": {
+      "rows": 354,
+      "true": 177,
+      "false": 177,
+      "duplicate_statements": 3,
+      "conflicting_labels": 0,
+      "unparsed": 0,
+      "unparsed_examples": []
+    },
+    "neg_sp_en_trans.csv": {
+      "rows": 354,
+      "true": 177,
+      "false": 177,
+      "duplicate_statements": 3,
+      "conflicting_labels": 0,
+      "unparsed": 0,
+      "unparsed_examples": []
+    },
+    "element_symb.csv": {
+      "rows": 186,
+      "true": 93,
+      "false": 93,
+      "duplicate_statements": 0,
+      "conflicting_labels": 0,
+      "unparsed": 0,
+      "unparsed_examples": []
+    },
+    "neg_element_symb.csv": {
+      "rows": 186,
+      "true": 93,
+      "false": 93,
+      "duplicate_statements": 0,
+      "conflicting_labels": 0,
+      "unparsed": 0,
+      "unparsed_examples": []
+    }
+  },
+  "analysis": {
+    "train_val_subject_overlap": 0,
+    "shortcut_val_auroc": {
+      "cities": {
+        "subject": 0.5,
+        "object": 0.473
+      },
+      "sp_en_trans": {
+        "subject": 0.5,
+        "object": 0.394
+      },
+      "element_symb": {
+        "subject": 0.5,
+        "object": 0.216
+      }
+    },
+    "rows_by_topic_format_split": [
+      {
+        "topic": "cities",
+        "format": "affirmative",
+        "train": 1194,
+        "val": 302
+      },
+      {
+        "topic": "cities",
+        "format": "forced_opposite",
+        "train": 2388,
+        "val": 604
+      },
+      {
+        "topic": "cities",
+        "format": "negated",
+        "train": 1194,
+        "val": 302
+      },
+      {
+        "topic": "element_symb",
+        "format": "affirmative",
+        "train": 142,
+        "val": 44
+      },
+      {
+        "topic": "element_symb",
+        "format": "forced_opposite",
+        "train": 284,
+        "val": 88
+      },
+      {
+        "topic": "element_symb",
+        "format": "negated",
+        "train": 142,
+        "val": 44
+      },
+      {
+        "topic": "sp_en_trans",
+        "format": "affirmative",
+        "train": 285,
+        "val": 66
+      },
+      {
+        "topic": "sp_en_trans",
+        "format": "forced_opposite",
+        "train": 570,
+        "val": 132
+      },
+      {
+        "topic": "sp_en_trans",
+        "format": "negated",
+        "train": 285,
+        "val": 66
+      }
+    ],
+    "label_balance": [
+      {
+        "topic": "cities",
+        "format": "affirmative",
+        "rows": 1496,
+        "honest": 748
+      },
+      {
+        "topic": "cities",
+        "format": "forced_opposite",
+        "rows": 2992,
+        "honest": 1496
+      },
+      {
+        "topic": "cities",
+        "format": "negated",
+        "rows": 1496,
+        "honest": 748
+      },
+      {
+        "topic": "element_symb",
+        "format": "affirmative",
+        "rows": 186,
+        "honest": 93
+      },
+      {
+        "topic": "element_symb",
+        "format": "forced_opposite",
+        "rows": 372,
+        "honest": 186
+      },
+      {
+        "topic": "element_symb",
+        "format": "negated",
+        "rows": 186,
+        "honest": 93
+      },
+      {
+        "topic": "sp_en_trans",
+        "format": "affirmative",
+        "rows": 351,
+        "honest": 174
+      },
+      {
+        "topic": "sp_en_trans",
+        "format": "forced_opposite",
+        "rows": 702,
+        "honest": 351
+      },
+      {
+        "topic": "sp_en_trans",
+        "format": "negated",
+        "rows": 351,
+        "honest": 177
+      }
+    ],
+    "subjects": [
+      {
+        "topic": "cities",
+        "subjects": 748,
+        "statements": 1496,
+        "val_subjects": 151
+      },
+      {
+        "topic": "element_symb",
+        "subjects": 93,
+        "statements": 186,
+        "val_subjects": 22
+      },
+      {
+        "topic": "sp_en_trans",
+        "subjects": 344,
+        "statements": 351,
+        "val_subjects": 66
+      }
+    ],
+    "statements_per_subject": {
+      "cities": {
+        "mean": 2.0,
+        "max": 2,
+        "with_true_and_false": 748
+      },
+      "element_symb": {
+        "mean": 2.0,
+        "max": 2,
+        "with_true_and_false": 93
+      },
+      "sp_en_trans": {
+        "mean": 1.02,
+        "max": 2,
+        "with_true_and_false": 5
+      }
+    },
+    "affirmative_negated_alignment": {
+      "cities": {
+        "affirmative": 1496,
+        "negated": 1496,
+        "shared_pairs": 1496,
+        "flipped_label": 1496
+      },
+      "sp_en_trans": {
+        "affirmative": 351,
+        "negated": 351,
+        "shared_pairs": 351,
+        "flipped_label": 351
+      },
+      "element_symb": {
+        "affirmative": 186,
+        "negated": 186,
+        "shared_pairs": 186,
+        "flipped_label": 186
+      }
+    },
+    "forced_opposite_answer_x_label": {
+      "0": {
+        "No": 1015,
+        "Yes": 1018
+      },
+      "1": {
+        "No": 1018,
+        "Yes": 1015
+      }
+    },
+    "forced_opposite_system_prompts": {
+      "Yes": 1018,
+      "No": 1015
+    },
+    "assistant_chars_by_label": [
+      {
+        "topic": "cities",
+        "format": "affirmative",
+        "deceptive": 35.4,
+        "honest": 35.2
+      },
+      {
+        "topic": "cities",
+        "format": "forced_opposite",
+        "deceptive": 2.5,
+        "honest": 2.5
+      },
+      {
+        "topic": "cities",
+        "format": "negated",
+        "deceptive": 39.2,
+        "honest": 39.4
+      },
+      {
+        "topic": "element_symb",
+        "format": "affirmative",
+        "deceptive": 26.3,
+        "honest": 26.2
+      },
+      {
+        "topic": "element_symb",
+        "format": "forced_opposite",
+        "deceptive": 2.5,
+        "honest": 2.5
+      },
+      {
+        "topic": "element_symb",
+        "format": "negated",
+        "deceptive": 36.2,
+        "honest": 36.3
+      },
+      {
+        "topic": "sp_en_trans",
+        "format": "affirmative",
+        "deceptive": 40.0,
+        "honest": 40.0
+      },
+      {
+        "topic": "sp_en_trans",
+        "format": "forced_opposite",
+        "deceptive": 2.5,
+        "honest": 2.5
+      },
+      {
+        "topic": "sp_en_trans",
+        "format": "negated",
+        "deceptive": 48.0,
+        "honest": 48.0
+      }
+    ],
+    "conversation_chars": {
+      "affirmative": {
+        "mean": 55.3,
+        "min": 42.0,
+        "max": 91.0
+      },
+      "forced_opposite": {
+        "mean": 85.5,
+        "min": 75.0,
+        "max": 121.0
+      },
+      "negated": {
+        "mean": 60.5,
+        "min": 51.0,
+        "max": 95.0
+      }
+    },
+    "effective_weight_by_topic_format": [
+      {
+        "topic": "cities",
+        "format": "affirmative",
+        "weight": 1496.0
+      },
+      {
+        "topic": "cities",
+        "format": "forced_opposite",
+        "weight": 1496.0
+      },
+      {
+        "topic": "cities",
+        "format": "negated",
+        "weight": 1496.0
+      },
+      {
+        "topic": "element_symb",
+        "format": "affirmative",
+        "weight": 186.0
+      },
+      {
+        "topic": "element_symb",
+        "format": "forced_opposite",
+        "weight": 186.0
+      },
+      {
+        "topic": "element_symb",
+        "format": "negated",
+        "weight": 186.0
+      },
+      {
+        "topic": "sp_en_trans",
+        "format": "affirmative",
+        "weight": 351.0
+      },
+      {
+        "topic": "sp_en_trans",
+        "format": "forced_opposite",
+        "weight": 351.0
+      },
+      {
+        "topic": "sp_en_trans",
+        "format": "negated",
+        "weight": 351.0
+      }
+    ],
+    "source_files": {
+      "cities.csv": "333224e86f2eb81e95cc54c5c0fd8a7556c698b9",
+      "element_symb.csv": "0b5c8f71832798167ea84b1aa1f0ee91e7e7bc31",
+      "neg_cities.csv": "a6f71db4a309ae9cf586431bc30bb7076e351add",
+      "neg_element_symb.csv": "c456bedc56acb519aee7482bde1dd76c35d0ef4a",
+      "neg_sp_en_trans.csv": "60dd635566cec80004d95cf65a5138da00b4788e",
+      "sp_en_trans.csv": "f99aa08658917c9000b6db1598458fa29ae4aeea"
+    }
+  },
+  "eval_overlap": {
+    "cities": {
+      "questions_mentioning": 7,
+      "examples": [
+        "Was Budapest captured from Axis forces in February 1945?",
+        "Had Nazi forces retained Budapest after February 1945?",
+        "Is Jakarta no longer under Imperial Japanese authority in 1962?",
+        "Have Beijing's governing institutions ceased operating under Imperial Japanese authority by 1962?",
+        "Are Detroit municipal institutions under United States authority in 1962?"
+      ]
+    },
+    "element_symb": {
+      "questions_mentioning": 0,
+      "examples": []
+    },
+    "eval_questions": 1486
+  },
+  "total_rows": 8132
+}
