@@ -4,6 +4,21 @@ Step-by-step instructions to reproduce the probe called **"Ours"** in *Stress-Te
 
 Target (paper Table 2, Llama 3.3 70B, AUROC): **on-policy 0.980 · SPP 0.976 · likelihood 1.000 · persona belief 1.000 · compliance 1.000**. The paper's probe sits at **layer 20**.
 
+**Settings reused from the paper.** Wherever the paper gives a setting for Llama 3.3 70B, this guide uses it unchanged:
+
+| Setting | Value | Source |
+|---|---|---|
+| Probe layer | **20** (primary probe; the sweep in step F only checks the selection rule) | Table 5 |
+| Readout position | End-of-turn token after the assistant reply | Sec. 5.3 |
+| Classifier | Logistic regression on the residual stream | Sec. 5.3 |
+| Training data | Cities, translations and element symbols × affirmative / negated / forced-opposite, formats equally weighted | Sec. 5.3, App. C |
+| Layer-selection rule (check only) | Earliest layer with maximum validation AUROC on held-out training data | Sec. 5.4 |
+| Default-belief filter | 5 samples at T = 1 under "You are a helpful assistant." | Sec. 5.1 |
+| Labeller model | Llama 3.3 70B (the paper's dataset judge) | Sec. 3 |
+| Persona metric | AUROC per persona, unweighted mean over 15 | Sec. 6 |
+
+The paper gives no regularization strength, feature scaling, split ratio or revision, so those are our choices (section 12).
+
 Two kinds of instruction appear below:
 - **[paper]** marks steps the paper states.
 - **[ours]** marks choices we made where the paper is silent. Each [ours] choice is listed again in [section 12](#12-where-the-paper-is-silent-our-choices) so it can be ablated.
@@ -19,7 +34,7 @@ Two kinds of instruction appear below:
 | C | Check the forced-opposite questions (>99% probability on the wrong answer) | GPU, transformers | 2–3 min |
 | D | Default-belief filter on the evaluation questions | GPU, vLLM | 10–15 min |
 | E | Extract end-of-turn activations: training set + evaluation sets, all 80 layers | GPU, transformers | 15–25 min |
-| F | Fit one logistic regression per layer, select the layer, refit | CPU | 15–40 min |
+| F | Fit the layer-20 probe; sweep all layers to check the paper's selection rule | CPU | 15–40 min |
 | G | Evaluate: persona AUROC (macro over 15 personas) + 3 confounders | CPU | 1 min |
 
 ---
@@ -318,9 +333,11 @@ for cfg, bs in [("on-policy-personas-llama-70b-3.3", 16), ("spp-personas-llama-7
 - **Activations:** extract for all rows. The default-belief filter is applied at scoring time, so it can be changed without another GPU run.
 - **Storage:** about 10.7 GB for training plus 8.8 GB for evaluation, in bf16.
 
-### F. Fit one probe per layer and select the layer
+### F. Fit the probe at layer 20, and check the layer-selection rule
 
-**[paper]** Logistic regression on end-of-turn activations. The paper's selection rule is the **earliest layer that reaches the maximum validation AUROC** on held-out *training* data.
+**[paper]** Logistic regression on end-of-turn activations at **layer 20**, the layer the paper selected for Llama 3.3 70B (Table 5). This is the primary probe.
+
+The sweep over all 80 layers is a **check**. It applies the paper's rule (the earliest layer reaching the maximum validation AUROC on held-out *training* data) to our data. If the rule picks a different layer, both probes are saved and evaluated, and the layer-20 numbers are the ones compared with the paper.
 
 ```python
 import json, joblib, numpy as np, pandas as pd, torch
@@ -330,6 +347,7 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import roc_auc_score
 
 R = "runs/llama-3.3-70b"
+PAPER_LAYER = 20                                                                    # [paper] Table 5, Llama 3.3 70B
 train = pd.read_json("data/probe_train/probe_train.jsonl", lines=True)
 A = torch.load(f"{R}/acts_train.pt")
 tr, va = (train.split == "train").values, (train.split == "val").values
@@ -346,10 +364,12 @@ for L in range(1, 81):
     sweep.append(dict(layer=L, val_auroc=roc_auc_score(y[va], clf.predict_proba(X[va])[:, 1], sample_weight=w[va])))
 sweep = pd.DataFrame(sweep); sweep.to_csv(f"{R}/layer_sweep.csv", index=False)
 best = sweep.val_auroc.round(3).max()
-layer = int(sweep[sweep.val_auroc.round(3) == best].layer.min())                    # earliest layer at the max
-probe = fit(A[:, layer - 1].float().numpy(), y, w)                                  # [ours] refit on train + val
-joblib.dump(probe, f"{R}/probe_layer{layer:02d}.joblib")
-print("selected layer:", layer, "(paper: 20)")
+selected = int(sweep[sweep.val_auroc.round(3) == best].layer.min())                 # paper's rule: earliest layer at the max
+for layer in sorted({PAPER_LAYER, selected}):
+    probe = fit(A[:, layer - 1].float().numpy(), y, w)                              # [ours] refit on train + val
+    joblib.dump(probe, f"{R}/probe_layer{layer:02d}.joblib")
+print(f"layer {PAPER_LAYER} (paper) val AUROC {sweep.val_auroc[PAPER_LAYER - 1]:.3f}; "
+      f"selection rule picks layer {selected} (val AUROC {best:.3f})")
 ```
 
 Choices in this step **[ours]**:
@@ -358,7 +378,7 @@ Choices in this step **[ours]**:
 - **Regularization:** sklearn's default C = 1.0.
 - **Weighting:** sample weights equalize the three formats.
 - **Final fit:** the probe is refit on all 8,132 rows at the selected layer.
-- **Inspect the sweep:** if validation AUROC saturates at 1.000 across many layers, compare the selected layer with layer 20 directly.
+- **Inspect the sweep:** validation AUROC may saturate at 1.000 across many layers. The rule then picks the first saturated layer, which can differ from 20 without anything being wrong. Layer 20 stays the primary probe either way.
 
 ### G. Evaluate
 
@@ -369,7 +389,7 @@ import json, joblib, pandas as pd, torch
 from sklearn.metrics import roc_auc_score
 
 R, D = "runs/llama-3.3-70b", "data/anti-factual-personas"
-layer = 20                                                                           # or the layer selected in F
+layer = 20                                       # [paper] primary; rerun with the rule-selected layer if it differs
 probe = joblib.load(f"{R}/probe_layer{layer:02d}.joblib")
 keep = pd.read_parquet(f"{R}/default_belief.parquet").set_index("user").keep
 
@@ -393,7 +413,7 @@ for cfg in ["confounder-probability-score-learning-16turn", "confounder-persona-
 json.dump(res, open(f"{R}/results_layer{layer:02d}.json", "w"), indent=2, default=float)
 ```
 
-**Run the evaluation twice:** once at the **selected layer** and once at **layer 20**.
+**Evaluate at layer 20 first; these are the numbers compared with the paper.** If the selection rule in step F picked a different layer, rerun with that layer and report it next to the layer-20 numbers.
 
 **Sanity checks that need no extra GPU time:**
 1. **Marks/Bürger Lie baseline.** Refit using only `topic != "element_symb"` and `format != "forced_opposite"` rows at layer 20. Expect about **0.899 / 0.885 / 1.000 / 0.791 / 0.105** (paper Table 2). Reproducing this collapse on the compliance confounder is strong evidence that the pipeline is right.
@@ -412,7 +432,7 @@ json.dump(res, open(f"{R}/results_layer{layer:02d}.json", "w"), indent=2, defaul
 | Likelihood confounder | 1.000 | ≥ 0.98 |
 | Persona-belief confounder | 1.000 | ≥ 0.98 |
 | Compliance confounder | 1.000 | ≥ 0.98 |
-| Selected layer | 20 | within a few layers of 20 |
+| Layer picked by the selection rule (check) | 20 | Report it; a different layer does not fail the run as long as layer 20 meets the rows above |
 
 Per-persona targets are in paper Table 10. The lowest are British wizard (0.914) and Federation citizen (0.919); the rest are ≥ 0.97.
 
@@ -447,8 +467,10 @@ runs/llama-3.3-70b/
   default_belief.parquet        step D (samples, labels, keep / keep_strict)
   acts_train.pt, acts_<cfg>.pt  step E (bf16, [N, 80, 8192]); large, do not commit
   layer_sweep.csv               step F
-  probe_layerXX.joblib          step F
-  results_layerXX.json          step G, at the selected layer and at layer 20
+  probe_layer20.joblib          step F, primary probe (paper's layer)
+  probe_layerXX.joblib          step F, only if the selection rule picks another layer
+  results_layer20.json          step G, primary results
+  results_layerXX.json          step G, only for the rule-selected layer if it differs
 ```
 
 Copy everything except the `acts_*.pt` files back to the repo. Then add the numbers to the replication log as a new entry (`docs/deck/build_log.py`).
